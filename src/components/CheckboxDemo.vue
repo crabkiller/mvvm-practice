@@ -21,38 +21,58 @@ export default {
   },
   emits: ['update:value'],
   setup(props, { emit }) {
+    // 基于之前讨论的，对于更新「已选中选项」，这里可能的一种方式是：
+    /*
+      const updateValue = newVal => {
+        emit('update:value', newVal);
+      };
+
+      // 全选/取消全选
+      const toggleCheckAll = ({ target: { checked } }) => {
+        updateValue(checked ? props.options.map(option => option.value) : []);
+      };
+
+      // 修改选中项
+      const handleChange = updateValue;
+    */
+    // 这里还有一种利用 Vue 计算属性的 setter 属性结合 v-model 指令来实现的思路，如下
+    // 采用这种方式，我们就无需关心事件监听的事情了，我们的关注点只是数据变更，数据变更就会走到 setter 里
+    // 尤其对于使用 v-model 实现了“双向绑定”的组件来说，我们不需要关心组件内部对外 emit 了什么事件
+    // 在 Vue3 里组件内部在实现 v-model 的时候对外 emit 的事件相对比较显式，因为我们可以从 v-model:value 看出是 update:value 事件
+    // 在 Vue2 的时代，这个事件是很隐式的，一般都是通过猜测 input 还是 change 事件来
+    // 在 Vue2 的时代最稳妥的方式应该是 Component.model.event 来得知具体的事件名，但是动态监听事件又是一个难题
+    // 如果我们只是为了实现双向绑定，可以利用带有 setter 的计算属性绑定到 v-model 上
+    // 让 Vue 去帮我们分析出具体的事件名称进行事件绑定的工作，框架本身做的肯定是正确的，对于未来改动和升级的兼容性也更好
+    const model = computed({
+      get() {
+        return props.value;
+      },
+      set(newVal) {
+        emit('update:value', newVal);
+      },
+    });
+
     // 全选状态
-    const allChecked = computed(
-      () => props.value?.length > 0 && props.value.length === props.options.length
-    );
+    // 同理，这里「全选」也可以使用计算属性的 setter 结合 v-model 来实现
+    // 而且这里使用计算属性带来了一个好处是，不需要手动计算初始值了，天然关联自动更新
+    const allChecked = computed({
+      get() {
+        return model.value?.length > 0 && model.value.length === props.options.length;
+      },
+      set(newVal) {
+        model.value = newVal ? props.options.map(option => option.value) : [];
+      },
+    });
 
     // 半选状态
     const indeterminate = computed(
-      () => props.value?.length > 0 && !allChecked.value
+      () => model.value?.length > 0 && !allChecked.value
     );
 
-    // 全选/取消全选
-    // 这里有个问题，`toggleCheckAll` 和 `handleChange` 里都在 `emit('update:value')` 来同步当前状态
-    // 同样，随着业务发展，后期修改状态的场景可能会越来越多，如果都在 `emit('update:value')` 就觉得在写重复代码
-    // 其实写重复代码这个问题倒也不是太严重，可能大家会觉得写一个通用方法，里面去 `emit('update:value')` 不就解决了嘛
-    // 这里一个主要问题是：命令式编程(Imperative)和声明式编程(Declarative)的区别
-    // 更倾向的一种方式是：业务逻辑只需要写 `props.value = newVal`
-    // 因为业务只希望去更新这个值，并不关心这个值最终是以何种方式被更新
-    // 如果是这种方式，这里有一个问题：value 本身是一个 props 不推荐甚至不能直接修改，那要怎么做呢，具体见下一个 commit
-    const toggleCheckAll = ({ target: { checked } }) => {
-      emit('update:value', checked ? props.options.map(option => option.value) : []);
-    };
-
-    // 修改选中项
-    const handleChange = (newVal) => {
-      emit('update:value', newVal);
-    };
-
     return {
+      model,
       allChecked,
-      toggleCheckAll,
       indeterminate,
-      handleChange,
     };
   },
 };
@@ -62,17 +82,15 @@ export default {
   <section>
     <section>
       <Checkbox
-        :checked="allChecked"
+        v-model:checked="allChecked"
         :indeterminate="indeterminate"
-        @change="toggleCheckAll"
       >
         全选
       </Checkbox>
     </section>
     <CheckboxGroup
-      :value="value"
+      v-model:value="model"
       :options="options"
-      @update:value="handleChange"
     />
   </section>
 </template>
