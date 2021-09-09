@@ -1,13 +1,14 @@
 <script>
 import { Button, Modal } from 'ant-design-vue';
 import { LeftOutlined, RightOutlined, Loading3QuartersOutlined } from '@ant-design/icons-vue';
-import useContents from './useContents';
+import Contents from './Contents';
 import useDetail from './useDetail';
 import useCurrentContent from './useCurrentContent';
-import { fetchContents, fetchDetail } from './services';
+import { fetchDetail } from './services';
 
 export default {
   components: {
+    Contents,
     Button,
     Modal,
     LeftOutlined,
@@ -15,10 +16,6 @@ export default {
     Loading3QuartersOutlined,
   },
   setup() {
-    const {
-      contents,
-    } = useContents(fetchContents);
-
     const {
       detailId,
       isDetail,
@@ -30,10 +27,9 @@ export default {
     const {
       currentContentIndex,
       handleContentSwitch,
-    } = useCurrentContent(contents, detailId);
+    } = useCurrentContent([], detailId);
 
     return {
-      contents,
       isDetail,
       detail,
       loading,
@@ -46,18 +42,7 @@ export default {
 </script>
 
 <template>
-  <ul class="list">
-    <li
-      v-for="content in contents"
-      :key="content.id"
-      class="item"
-      @click="handlePreview(content.id)"
-    >
-      <div class="content">
-        {{ content.title }}
-      </div>
-    </li>
-  </ul>
+  <Contents @preview="handlePreview" />
   <Modal
     v-if="isDetail"
     v-model:visible="isDetail"
@@ -96,35 +81,6 @@ export default {
 </template>
 
 <style scoped>
-ul,
-li {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.list {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.item {
-  position: relative;
-  width: 20%;
-  margin: 10px;
-  border: 1px solid rgba(0, 0, 0, .2);
-  background: rgba(0, 0, 0, .05);
-}
-.item::before {
-  content: "";
-  display: block;
-  padding-top: 100%;
-}
-.content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
 .preview-panel {
   display: flex;
   align-items: center;
