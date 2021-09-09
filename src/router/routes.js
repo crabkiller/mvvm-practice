@@ -1,6 +1,6 @@
 const Home = () => import('../views/Home.vue');
 const CheckboxDemo = () => import('../views/CheckboxDemo.vue');
-const DetailDemo = () => import('../views/DetailDemo.vue');
+const DetailDemo = () => import('../views/DetailDemo/index.vue');
 
 export default [
   {
