@@ -1,11 +1,9 @@
-# Vue 3 + Typescript + Vite
+# MVVM 实践心得
 
-This template should help get you started developing with Vue 3 and Typescript in Vite.
+对于数据驱动开发模式的一些实践及心得，站在数据的角度，关注数据之间的关联性，编写更加稳定优雅的代码。
 
-## Recommended IDE Setup
+# 查看指南
 
-- [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
+在线上通过点击 `commits` 查看历史 `commit` ，在本地通过 `git checkout head~N` （其中 N 为数字），切换到任意 `commit` 节点查看代码及注释。
 
-## Type Support For `.vue` Imports in TS
-
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's `.vue` type support plugin by running `Volar: Switch TS Plugin on/off` from VSCode command palette.
+注意⚠️：切换 `commit` 后项目如果报错，通过 `yarn` 重新安装依赖解决。
