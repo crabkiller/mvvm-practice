@@ -9,8 +9,8 @@ export default function useCurrentContent(contents, detailId) {
       detailId.value = contents.value?.[newVal].id;
     },
   });
-  function handleContentSwitch(step) {
-    currentContentIndex.value += step;
+  function handleContentSwitch(newVal) {
+    currentContentIndex.value = newVal;
   }
 
   return {
