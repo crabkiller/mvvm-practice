@@ -1,39 +1,34 @@
 <script>
-import { Button, Modal } from 'ant-design-vue';
-import { LeftOutlined, RightOutlined, Loading3QuartersOutlined } from '@ant-design/icons-vue';
+import { computed, ref } from 'vue';
 import Contents from './Contents';
-import useDetail from './useDetail';
-import useCurrentContent from './useCurrentContent';
-import { fetchDetail } from './services';
+import Detail, { useDetailId } from './Detail';
+import Switcher, { useCurrentContent } from './Switcher';
 
 export default {
   components: {
     Contents,
-    Button,
-    Modal,
-    LeftOutlined,
-    RightOutlined,
-    Loading3QuartersOutlined,
+    Detail,
+    Switcher,
   },
   setup() {
-    const {
-      detailId,
-      isDetail,
-      detail,
-      loading,
-      handlePreview,
-    } = useDetail(fetchDetail);
+    const { detailId, setDetailId } = useDetailId();
+
+    const contents = ref(null);
+    function handleContentsChange(newVal) {
+      contents.value = newVal;
+    }
+    const total = computed(() => contents.value?.length ?? 0);
 
     const {
       currentContentIndex,
       handleContentSwitch,
-    } = useCurrentContent([], detailId);
+    } = useCurrentContent(contents, detailId);
 
     return {
-      isDetail,
-      detail,
-      loading,
-      handlePreview,
+      detailId,
+      handlePreview: setDetailId,
+      handleContentsChange,
+      total,
       currentContentIndex,
       handleContentSwitch,
     };
@@ -42,50 +37,26 @@ export default {
 </script>
 
 <template>
-  <Contents @preview="handlePreview" />
-  <Modal
-    v-if="isDetail"
-    v-model:visible="isDetail"
-    title="预览"
-    :footer="null"
-    :mask-closable="false"
-  >
-    <section class="preview-panel">
-      <Button
-        shape="circle"
-        :hidden="currentContentIndex <= 0"
-        @click="handleContentSwitch(-1)"
-      >
-        <template #icon>
-          <LeftOutlined />
-        </template>
-      </Button>
-      <p class="desc">
-        {{ detail?.desc }}
-        <Loading3QuartersOutlined
-          v-if="loading"
-          spin
-        />
-      </p>
-      <Button
-        shape="circle"
-        :hidden="currentContentIndex >= contents?.length - 1"
-        @click="handleContentSwitch(1)"
-      >
-        <template #icon>
-          <RightOutlined />
-        </template>
-      </Button>
-    </section>
-  </Modal>
+  <Contents
+    @update:contents="handleContentsChange"
+    @preview="handlePreview"
+  />
+  <Detail v-model:detail-id="detailId">
+    <template #left>
+      <Switcher
+        :step="-1"
+        :current-index="currentContentIndex"
+        :total="total"
+        @switch="handleContentSwitch"
+      />
+    </template>
+    <template #right>
+      <Switcher
+        :step="1"
+        :current-index="currentContentIndex"
+        :total="total"
+        @switch="handleContentSwitch"
+      />
+    </template>
+  </Detail>
 </template>
-
-<style scoped>
-.preview-panel {
-  display: flex;
-  align-items: center;
-}
-.desc {
-  margin: 0 auto 0 20px;
-}
-</style>

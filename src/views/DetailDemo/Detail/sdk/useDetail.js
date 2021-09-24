@@ -2,29 +2,7 @@ import { computed, ref, watchEffect } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import omit from 'lodash.omit';
 
-export default function useDetail(getDetail, detailIdQueryKey = 'detail') {
-  const route = useRoute();
-  const router = useRouter();
-  const detailId = computed({
-    get() {
-      return route.query[detailIdQueryKey];
-    },
-    set(newVal) {
-      const query = omit(route.query, [detailIdQueryKey]);
-      let routeChangeFn = 'push';
-      if (newVal) {
-        query[detailIdQueryKey] = newVal;
-        if (isDetail.value) {
-          routeChangeFn = 'replace';
-        }
-      }
-
-      router[routeChangeFn]({
-        query,
-      });
-    },
-  });
-
+export default function useDetail(getDetail, detailId) {
   const isDetail = computed({
     get() {
       return !!detailId.value;
@@ -57,7 +35,7 @@ export default function useDetail(getDetail, detailIdQueryKey = 'detail') {
     }
   });
 
-  function handlePreview(id) {
+  function preview(id) {
     detailId.value = id;
   }
 
@@ -66,6 +44,6 @@ export default function useDetail(getDetail, detailIdQueryKey = 'detail') {
     isDetail,
     detail,
     loading,
-    handlePreview,
+    preview,
   };
 }
